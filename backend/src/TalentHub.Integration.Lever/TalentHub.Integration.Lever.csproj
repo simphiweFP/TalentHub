@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TalentHub.Application\TalentHub.Application.csproj" />
+    <ProjectReference Include="..\TalentHub.Integration.Communication\TalentHub.Integration.Communication.csproj" />
   </ItemGroup>
 
 </Project>
