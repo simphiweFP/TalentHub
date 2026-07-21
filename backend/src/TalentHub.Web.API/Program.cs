@@ -1,5 +1,7 @@
 using TalentHub.Application;
 using TalentHub.Infrastructure;
+using TalentHub.Integration.Greenhouse;
+using TalentHub.Integration.Greenhouse.Endpoints;
 using TalentHub.Integration.RemoteOK;
 using TalentHub.Integration.RemoteOK.Endpoints;
 using TalentHub.Web.API.Extensions;
@@ -21,6 +23,7 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 builder.Services.AddWebMain();
 builder.Services.AddRemoteOkIntegration(builder.Configuration);
+builder.Services.AddGreenhouseIntegration(builder.Configuration);
 
 var app = builder.Build();
 
@@ -48,6 +51,7 @@ if (app.Environment.IsDevelopment())
 
 app.MapHealthChecks("/health");
 app.MapRemoteOkEndpoints();
+app.MapGreenhouseEndpoints();
 app.MapControllers();
 
 app.Run();
