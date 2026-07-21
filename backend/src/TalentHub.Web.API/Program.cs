@@ -1,5 +1,7 @@
 using TalentHub.Application;
 using TalentHub.Infrastructure;
+using TalentHub.Integration.RemoteOK;
+using TalentHub.Integration.RemoteOK.Endpoints;
 using TalentHub.Web.API.Extensions;
 using TalentHub.Web.API.Middleware;
 using TalentHub.Web.API.Options;
@@ -18,6 +20,7 @@ builder.Services.AddBackendFoundation(builder.Configuration);
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 builder.Services.AddWebMain();
+builder.Services.AddRemoteOkIntegration(builder.Configuration);
 
 var app = builder.Build();
 
@@ -44,6 +47,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapHealthChecks("/health");
+app.MapRemoteOkEndpoints();
 app.MapControllers();
 
 app.Run();
