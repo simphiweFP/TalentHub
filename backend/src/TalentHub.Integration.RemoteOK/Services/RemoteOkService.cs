@@ -1,7 +1,7 @@
-using TalentHub.Integration.Communication.Models;
 using TalentHub.Integration.RemoteOK.Client;
 using TalentHub.Integration.RemoteOK.Mapping;
 using TalentHub.Integration.RemoteOK.Models;
+using Job = TalentHub.Integration.Communication.Models.Job;
 
 namespace TalentHub.Integration.RemoteOK.Services;
 

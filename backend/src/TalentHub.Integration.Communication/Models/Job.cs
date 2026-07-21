@@ -1,8 +1,8 @@
-namespace TalentHub.Integration.RemoteOK.Models;
+namespace TalentHub.Integration.Communication.Models;
 
 public sealed record Job
 {
-    public string Source { get; init; } = "RemoteOK";
+    public string Source { get; init; } = string.Empty;
 
     public string ExternalId { get; init; } = string.Empty;
 

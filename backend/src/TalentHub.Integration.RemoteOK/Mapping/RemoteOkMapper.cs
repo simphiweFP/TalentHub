@@ -1,3 +1,4 @@
+using TalentHub.Integration.Communication.Models;
 using TalentHub.Integration.RemoteOK.Models;
 
 namespace TalentHub.Integration.RemoteOK.Mapping;
