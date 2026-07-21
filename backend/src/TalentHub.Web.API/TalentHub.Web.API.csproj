@@ -20,6 +20,7 @@
     <ProjectReference Include="..\TalentHub.Web.Main\TalentHub.Web.Main.csproj" />
     <ProjectReference Include="..\TalentHub.Application\TalentHub.Application.csproj" />
     <ProjectReference Include="..\TalentHub.Infrastructure\TalentHub.Infrastructure.csproj" />
+    <ProjectReference Include="..\TalentHub.Integration.Sql\TalentHub.Integration.Sql.csproj" />
   </ItemGroup>
 
 </Project>
