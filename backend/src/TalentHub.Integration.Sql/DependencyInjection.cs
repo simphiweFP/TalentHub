@@ -18,9 +18,7 @@ public static class DependencyInjection
         DapperConfiguration.Configure();
 
         services.AddOptions<SqlConnectionOptions>()
-            .Bind(configuration.GetSection(SqlConnectionOptions.SectionName))
-            .Validate(options => !string.IsNullOrWhiteSpace(options.ConnectionString), "Sql:ConnectionString must be configured.")
-            .ValidateOnStart();
+            .Bind(configuration.GetSection(SqlConnectionOptions.SectionName));
 
         services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
         services.AddScoped<IQueryExecutor, QueryExecutor>();
