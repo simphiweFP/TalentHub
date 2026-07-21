@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using TalentHub.Web.API.Options;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace TalentHub.Web.API.Extensions;
 
