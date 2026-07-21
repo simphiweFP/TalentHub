@@ -1,12 +1,23 @@
 using System.IO.Compression;
+using System.Text;
 using System.Threading.RateLimiting;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using TalentHub.Web.API.Abstractions;
+using TalentHub.Web.API.Authentication;
 using TalentHub.Web.API.Options;
+using TalentHub.Web.API.Security;
+using TalentHub.Web.API.Services;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using AuthOptions = TalentHub.Web.API.Options.AuthenticationOptions;
+using AuthService = TalentHub.Web.API.Services.AuthenticationService;
+using IAuthService = TalentHub.Web.API.Abstractions.IAuthenticationService;
 
 namespace TalentHub.Web.API.Extensions;
 
@@ -14,9 +25,52 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddBackendFoundation(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<AuthOptions>(configuration.GetSection(AuthOptions.SectionName));
         services.Configure<ApiOptions>(configuration.GetSection(ApiOptions.SectionName));
         services.Configure<RateLimitingOptions>(configuration.GetSection(RateLimitingOptions.SectionName));
         services.Configure<SwaggerOptions>(configuration.GetSection(SwaggerOptions.SectionName));
+
+        var authenticationOptions = configuration.GetSection(AuthOptions.SectionName).Get<AuthOptions>() ?? new AuthOptions();
+
+        services.AddSingleton<IJwtTokenService, JwtTokenService>();
+        services.AddSingleton<IRefreshTokenStore, InMemoryRefreshTokenStore>();
+        services.AddScoped<IAuthService, AuthService>();
+
+        services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
+                    ValidateTokenReplay = false,
+                    ClockSkew = TimeSpan.Zero,
+                    ValidIssuer = authenticationOptions.Jwt.Issuer,
+                    ValidAudience = authenticationOptions.Jwt.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationOptions.Jwt.SigningKey))
+                };
+            })
+            .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(AuthenticationSchemeNames.ApiKey, _ => { });
+
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy(AuthorizationPolicies.RequireAuthenticatedUser, policy => policy.RequireAuthenticatedUser());
+            options.AddPolicy(AuthorizationPolicies.RequireAdministratorRole, policy => policy.RequireRole("Administrator"));
+            options.AddPolicy(AuthorizationPolicies.RequireManagerRole, policy => policy.RequireRole("Manager"));
+            options.AddPolicy(AuthorizationPolicies.RequireUserRole, policy => policy.RequireRole("User"));
+            options.AddPolicy(AuthorizationPolicies.RequireApiKey, policy =>
+            {
+                policy.AddAuthenticationSchemes(AuthenticationSchemeNames.ApiKey);
+                policy.RequireAuthenticatedUser();
+            });
+        });
 
         services.AddControllers();
         services.AddEndpointsApiExplorer();
