@@ -7,9 +7,28 @@ namespace TalentHub.Integration.Communication.Services;
 
 public sealed class JobAggregationService(
     IProviderResolver providerResolver,
-    IOptions<ResilienceOptions> resilienceOptions) : IJobAggregationService
+    ICacheStore cacheStore,
+    IOptions<ResilienceOptions> resilienceOptions,
+    IOptions<CacheOptions> cacheOptions) : IJobAggregationService
 {
+    private readonly CacheEntryPolicy _cachePolicy = new(cacheOptions.Value.AggregationExpiration);
+
     public async Task<JobAggregationResult> GetJobsAsync(CancellationToken cancellationToken = default)
+    {
+        if (cacheOptions.Value.Enabled)
+        {
+            return await cacheStore.GetOrCreateAsync(
+                CacheNamespaces.AggregationJobs,
+                "all",
+                _cachePolicy,
+                ExecuteAggregationAsync,
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        return await ExecuteAggregationAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<JobAggregationResult> ExecuteAggregationAsync(CancellationToken cancellationToken)
     {
         var providerNames = providerResolver.GetProviderNames();
         if (providerNames.Count == 0)

@@ -15,6 +15,7 @@ public static class DependencyInjection
         services.AddSingleton<IProviderFactory, ProviderFactory>();
         services.AddSingleton<IProviderResolver, ProviderResolver>();
         services.AddScoped<IJobAggregationService, JobAggregationService>();
+        services.AddSingleton<ICacheInvalidator, CacheInvalidator>();
 
         return services;
     }
