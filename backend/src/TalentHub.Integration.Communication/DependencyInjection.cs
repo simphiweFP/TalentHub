@@ -11,6 +11,10 @@ public static class DependencyInjection
     public static IServiceCollection AddCommunicationIntegration(this IServiceCollection services)
     {
         services.AddTransient<IBaseApiClient, BaseApiClientProxy>();
+        services.AddSingleton<ProviderRegistry>();
+        services.AddSingleton<IProviderFactory, ProviderFactory>();
+        services.AddSingleton<IProviderResolver, ProviderResolver>();
+        services.AddScoped<IJobAggregationService, JobAggregationService>();
 
         return services;
     }
