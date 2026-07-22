@@ -30,6 +30,7 @@ public sealed class JobSynchronizationWorker(
     {
         using var scope = scopeFactory.CreateScope();
         var jobAggregationService = scope.ServiceProvider.GetRequiredService<IJobAggregationService>();
+        var cacheInvalidator = scope.ServiceProvider.GetService<TalentHub.Integration.Communication.Abstractions.ICacheInvalidator>();
         var result = await jobAggregationService.GetJobsAsync(cancellationToken).ConfigureAwait(false);
 
         logger.LogInformation(
@@ -46,6 +47,12 @@ public sealed class JobSynchronizationWorker(
                 failure.ProviderName,
                 failure.AttemptCount,
                 failure.ErrorMessage);
+        }
+
+        if (cacheInvalidator is not null)
+        {
+            await cacheInvalidator.InvalidateAllProviderCachesAsync(cancellationToken).ConfigureAwait(false);
+            await cacheInvalidator.InvalidateAggregationCacheAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }

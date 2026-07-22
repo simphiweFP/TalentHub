@@ -30,6 +30,7 @@ public sealed class CompanyRefreshWorker(
         using var scope = scopeFactory.CreateScope();
         var jobAggregationService = scope.ServiceProvider.GetRequiredService<IJobAggregationService>();
         var providerResolver = scope.ServiceProvider.GetRequiredService<IProviderResolver>();
+        var cacheInvalidator = scope.ServiceProvider.GetService<TalentHub.Integration.Communication.Abstractions.ICacheInvalidator>();
 
         var result = await jobAggregationService.GetJobsAsync(cancellationToken).ConfigureAwait(false);
         var companyNames = result.Jobs
@@ -46,6 +47,11 @@ public sealed class CompanyRefreshWorker(
             "Refreshed {CompanyCount} companies across {ProviderCount} providers.",
             companyNames.Length,
             providerNames.Count);
+
+        if (cacheInvalidator is not null)
+        {
+            await cacheInvalidator.InvalidateProviderCompanyCachesAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private async Task RefreshProviderCompaniesAsync(

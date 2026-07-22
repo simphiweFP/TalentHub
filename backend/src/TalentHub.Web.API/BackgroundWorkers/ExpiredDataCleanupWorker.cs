@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TalentHub.Integration.Communication.Abstractions;
 using TalentHub.Integration.Sql.Abstractions;
 using TalentHub.Integration.Sql.Constants;
 using TalentHub.Web.API.Options;
@@ -30,6 +31,7 @@ public sealed class ExpiredDataCleanupWorker(
     {
         using var scope = scopeFactory.CreateScope();
         var commandExecutor = scope.ServiceProvider.GetRequiredService<ICommandExecutor>();
+        var cacheInvalidator = scope.ServiceProvider.GetService<TalentHub.Integration.Communication.Abstractions.ICacheInvalidator>();
         var now = DateTime.UtcNow;
 
         var searchHistoryCutoffUtc = now.AddDays(-Math.Max(1, options.Value.SearchHistoryRetentionDays));
@@ -56,5 +58,11 @@ public sealed class ExpiredDataCleanupWorker(
             deletedSearchHistory,
             deletedAuditLogs,
             deletedJobs);
+
+        if (cacheInvalidator is not null)
+        {
+            await cacheInvalidator.InvalidateAggregationCacheAsync(cancellationToken).ConfigureAwait(false);
+            await cacheInvalidator.InvalidateProviderSearchCachesAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 }

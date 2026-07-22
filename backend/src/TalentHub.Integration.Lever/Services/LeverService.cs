@@ -1,3 +1,7 @@
+using Microsoft.Extensions.Options;
+using TalentHub.Integration.Communication.Abstractions;
+using TalentHub.Integration.Communication.Options;
+using TalentHub.Integration.Communication.Services;
 using TalentHub.Integration.Communication.Models;
 using TalentHub.Integration.Lever.Client;
 using TalentHub.Integration.Lever.Mapping;
@@ -5,17 +9,35 @@ using TalentHub.Integration.Lever.Models;
 
 namespace TalentHub.Integration.Lever.Services;
 
-public sealed class LeverService(ILeverClient client)
+public sealed class LeverService(
+    ILeverClient client,
+    ICacheStore cacheStore,
+    IOptions<CacheOptions> cacheOptions)
 {
     public async Task<IReadOnlyList<Job>> GetJobsAsync(CancellationToken cancellationToken = default)
-        => (await client.GetJobsAsync(cancellationToken).ConfigureAwait(false)).ToJobs();
+        => await ExecuteCachedAsync(
+            CacheNamespaces.ForProviderJobs("lever"),
+            "all",
+            cacheOptions.Value.ProviderJobsExpiration,
+            async () => (await client.GetJobsAsync(cancellationToken).ConfigureAwait(false)).ToJobs(),
+            cancellationToken).ConfigureAwait(false);
 
     public async Task<IReadOnlyList<Job>> SearchJobsAsync(LeverSearchRequest request, CancellationToken cancellationToken = default)
-        => (await client.SearchJobsAsync(request, cancellationToken).ConfigureAwait(false)).ToJobs();
+        => await ExecuteCachedAsync(
+            CacheNamespaces.ForProviderSearch("lever"),
+            BuildSearchKey(request),
+            cacheOptions.Value.ProviderSearchExpiration,
+            async () => (await client.SearchJobsAsync(request, cancellationToken).ConfigureAwait(false)).ToJobs(),
+            cancellationToken).ConfigureAwait(false);
 
     public async Task<Job?> GetCompanyJobPreviewAsync(string externalCompanyId, CancellationToken cancellationToken = default)
     {
-        var company = await client.GetCompanyAsync(externalCompanyId, cancellationToken).ConfigureAwait(false);
+        var company = await ExecuteCachedAsync(
+            CacheNamespaces.ForProviderCompany("lever"),
+            externalCompanyId.Trim().ToUpperInvariant(),
+            cacheOptions.Value.ProviderCompanyExpiration,
+            () => client.GetCompanyAsync(externalCompanyId, cancellationToken),
+            cancellationToken).ConfigureAwait(false);
         if (company is null)
         {
             return null;
@@ -34,4 +56,21 @@ public sealed class LeverService(ILeverClient client)
             PublishedAtUtc = DateTimeOffset.UtcNow
         };
     }
+
+    private Task<T> ExecuteCachedAsync<T>(string cacheNamespace, string cacheKey, TimeSpan expiration, Func<Task<T>> factory, CancellationToken cancellationToken)
+    {
+        if (!cacheOptions.Value.Enabled)
+        {
+            return factory();
+        }
+
+        return cacheStore.GetOrCreateAsync(cacheNamespace, cacheKey, new CacheEntryPolicy(expiration), _ => factory(), cancellationToken);
+    }
+
+    private static string BuildSearchKey(LeverSearchRequest request)
+        => string.Join('|',
+            request.SearchTerm?.Trim().ToUpperInvariant() ?? string.Empty,
+            request.Location?.Trim().ToUpperInvariant() ?? string.Empty,
+            request.PageNumber,
+            request.PageSize);
 }

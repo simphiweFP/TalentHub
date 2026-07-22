@@ -111,10 +111,19 @@ public sealed class JobAggregationServiceTests
     {
         return new JobAggregationService(
             new DictionaryProviderResolver(providers),
+            new MemoryCacheStore(new Microsoft.Extensions.Caching.Memory.MemoryCache(new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions()), new CacheKeyBuilder()),
             Options.Create(new ResilienceOptions
             {
                 RetryCount = retryCount,
                 RetryDelayMilliseconds = 0
+            }),
+            Options.Create(new CacheOptions
+            {
+                Enabled = true,
+                ProviderJobsExpiration = TimeSpan.FromMinutes(5),
+                ProviderSearchExpiration = TimeSpan.FromMinutes(5),
+                ProviderCompanyExpiration = TimeSpan.FromMinutes(5),
+                AggregationExpiration = TimeSpan.FromMinutes(5)
             }));
     }
 

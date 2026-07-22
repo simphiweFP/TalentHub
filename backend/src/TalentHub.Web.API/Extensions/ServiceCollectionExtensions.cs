@@ -5,10 +5,15 @@ using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using TalentHub.Integration.Communication.Abstractions;
+using TalentHub.Integration.Communication.Options;
+using TalentHub.Integration.Communication.Services;
 using TalentHub.Web.API.BackgroundWorkers;
 using TalentHub.Web.API.Abstractions;
 using TalentHub.Web.API.Authentication;
@@ -28,9 +33,21 @@ public static class ServiceCollectionExtensions
     {
         services.Configure<AuthOptions>(configuration.GetSection(AuthOptions.SectionName));
         services.Configure<ApiOptions>(configuration.GetSection(ApiOptions.SectionName));
+        services.Configure<CacheOptions>(configuration.GetSection(CacheOptions.SectionName));
         services.Configure<BackgroundWorkerOptions>(configuration.GetSection(BackgroundWorkerOptions.SectionName));
         services.Configure<RateLimitingOptions>(configuration.GetSection(RateLimitingOptions.SectionName));
         services.Configure<SwaggerOptions>(configuration.GetSection(SwaggerOptions.SectionName));
+
+        services.AddMemoryCache();
+        services.AddDistributedMemoryCache();
+        services.AddSingleton<ICacheKeyBuilder, CacheKeyBuilder>();
+        services.AddSingleton<ICacheStore>(serviceProvider =>
+        {
+            var cacheOptions = serviceProvider.GetRequiredService<IOptions<CacheOptions>>().Value;
+            return cacheOptions.Enabled && cacheOptions.UseDistributedCache
+                ? new DistributedCacheStore(serviceProvider.GetRequiredService<IDistributedCache>(), serviceProvider.GetRequiredService<ICacheKeyBuilder>())
+                : new MemoryCacheStore(serviceProvider.GetRequiredService<IMemoryCache>(), serviceProvider.GetRequiredService<ICacheKeyBuilder>());
+        });
 
         var authenticationOptions = configuration.GetSection(AuthOptions.SectionName).Get<AuthOptions>() ?? new AuthOptions();
 
