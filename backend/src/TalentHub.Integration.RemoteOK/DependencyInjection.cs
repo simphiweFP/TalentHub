@@ -12,6 +12,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddRemoteOkIntegration(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddCommunicationIntegration();
         services.AddOptions<RemoteOkOptions>().Bind(configuration.GetSection(RemoteOkOptions.SectionName));
         services.AddSingleton<IRemoteOkClient, RemoteOkClient>();
         services.AddScoped<RemoteOkService>();

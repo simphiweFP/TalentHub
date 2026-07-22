@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\TalentHub.Application\TalentHub.Application.csproj" />
+    <ProjectReference Include="..\..\src\TalentHub.Integration.Communication\TalentHub.Integration.Communication.csproj" />
     <ProjectReference Include="..\..\src\TalentHub.Domain\TalentHub.Domain.csproj" />
   </ItemGroup>
 

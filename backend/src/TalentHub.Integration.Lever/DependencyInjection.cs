@@ -12,6 +12,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddLeverIntegration(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddCommunicationIntegration();
         services.AddOptions<LeverOptions>().Bind(configuration.GetSection(LeverOptions.SectionName));
         services.AddSingleton<ILeverClient, LeverClient>();
         services.AddScoped<LeverService>();
