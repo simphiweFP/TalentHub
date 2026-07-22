@@ -23,6 +23,7 @@
     <ProjectReference Include="..\TalentHub.Integration.Sql\TalentHub.Integration.Sql.csproj" />
     <ProjectReference Include="..\TalentHub.Integration.RemoteOK\TalentHub.Integration.RemoteOK.csproj" />
     <ProjectReference Include="..\TalentHub.Integration.Greenhouse\TalentHub.Integration.Greenhouse.csproj" />
+    <ProjectReference Include="..\TalentHub.Integration.Lever\TalentHub.Integration.Lever.csproj" />
   </ItemGroup>
 
 </Project>
