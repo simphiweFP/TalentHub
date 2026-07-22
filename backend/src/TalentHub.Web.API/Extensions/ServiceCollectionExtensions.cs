@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using TalentHub.Web.API.BackgroundWorkers;
 using TalentHub.Web.API.Abstractions;
 using TalentHub.Web.API.Authentication;
 using TalentHub.Web.API.Options;
@@ -27,6 +28,7 @@ public static class ServiceCollectionExtensions
     {
         services.Configure<AuthOptions>(configuration.GetSection(AuthOptions.SectionName));
         services.Configure<ApiOptions>(configuration.GetSection(ApiOptions.SectionName));
+        services.Configure<BackgroundWorkerOptions>(configuration.GetSection(BackgroundWorkerOptions.SectionName));
         services.Configure<RateLimitingOptions>(configuration.GetSection(RateLimitingOptions.SectionName));
         services.Configure<SwaggerOptions>(configuration.GetSection(SwaggerOptions.SectionName));
 
@@ -126,6 +128,9 @@ public static class ServiceCollectionExtensions
 
         services.AddSwaggerGen();
         services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+        services.AddHostedService<JobSynchronizationWorker>();
+        services.AddHostedService<CompanyRefreshWorker>();
+        services.AddHostedService<ExpiredDataCleanupWorker>();
 
         return services;
     }
