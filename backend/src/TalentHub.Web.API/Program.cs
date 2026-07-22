@@ -6,6 +6,7 @@ using TalentHub.Integration.Greenhouse;
 using TalentHub.Integration.Greenhouse.Endpoints;
 using TalentHub.Integration.RemoteOK;
 using TalentHub.Integration.RemoteOK.Endpoints;
+using TalentHub.Integration.OpenAI;
 using TalentHub.Web.API.Extensions;
 using TalentHub.Web.API.Middleware;
 using TalentHub.Web.API.Options;
@@ -27,6 +28,7 @@ builder.Services.AddWebMain();
 builder.Services.AddRemoteOkIntegration(builder.Configuration);
 builder.Services.AddGreenhouseIntegration(builder.Configuration);
 builder.Services.AddLeverIntegration(builder.Configuration);
+builder.Services.AddOpenAiIntegration();
 
 var app = builder.Build();
 

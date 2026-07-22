@@ -26,6 +26,7 @@
     <ProjectReference Include="..\TalentHub.Integration.RemoteOK\TalentHub.Integration.RemoteOK.csproj" />
     <ProjectReference Include="..\TalentHub.Integration.Greenhouse\TalentHub.Integration.Greenhouse.csproj" />
     <ProjectReference Include="..\TalentHub.Integration.Lever\TalentHub.Integration.Lever.csproj" />
+    <ProjectReference Include="..\TalentHub.Integration.OpenAI\TalentHub.Integration.OpenAI.csproj" />
   </ItemGroup>
 
 </Project>
