@@ -22,6 +22,7 @@
     <ProjectReference Include="..\..\src\TalentHub.Application\TalentHub.Application.csproj" />
     <ProjectReference Include="..\..\src\TalentHub.Integration.Communication\TalentHub.Integration.Communication.csproj" />
     <ProjectReference Include="..\..\src\TalentHub.Integration.OpenAI\TalentHub.Integration.OpenAI.csproj" />
+    <ProjectReference Include="..\..\src\TalentHub.Integration.Sql\TalentHub.Integration.Sql.csproj" />
     <ProjectReference Include="..\..\src\TalentHub.Domain\TalentHub.Domain.csproj" />
     <ProjectReference Include="..\..\src\TalentHub.Web.API\TalentHub.Web.API.csproj" />
   </ItemGroup>
